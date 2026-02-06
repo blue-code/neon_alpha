@@ -1,7 +1,11 @@
 # NeonAlpha (Qlib + LEAN)
 
-초보자용 전체 매뉴얼:
-- [`MANUAL_BEGINNER_KR.md`](MANUAL_BEGINNER_KR.md)
+문서:
+- [`docs/DOCS_INDEX_KR.md`](docs/DOCS_INDEX_KR.md) - 문서 인덱스
+- [`docs/MANUAL_BEGINNER_KR.md`](docs/MANUAL_BEGINNER_KR.md) - 초보자 입문 매뉴얼
+- [`docs/REAL_TRADING_GUIDE_KR.md`](docs/REAL_TRADING_GUIDE_KR.md) - 실전 투자 운영 가이드(계좌/자금/브로커/데이터)
+- [`docs/QLIB_RESEARCH_GUIDE_KR.md`](docs/QLIB_RESEARCH_GUIDE_KR.md) - Qlib 리서치/신호 생성 상세
+- [`docs/LEAN_EXECUTION_GUIDE_KR.md`](docs/LEAN_EXECUTION_GUIDE_KR.md) - LEAN 집행/백테스트/실거래 상세
 
 ## 프로젝트 목적
 미국 주식 시장에서 아래 2가지 강점을 결합하기 위한 독립 프로젝트입니다.
@@ -25,9 +29,67 @@
 
 ---
 
+## 실제 테스트에서 돈으로 이어지는 운영 프로세스
+핵심은 "코드 실행"이 아니라 "게이트를 통과한 전략만 소액 실전으로 올리는 운영 체계"입니다.
+
+### 1) 연구/검증 게이트 (Qlib + pipeline + paper)
+1. Qlib로 신호를 생성합니다 (`date,symbol,score`).
+2. `validate`로 신호 무결성(빈 파일, 중복)을 확인합니다.
+3. `pipeline`으로 `생성 -> 검증 -> 모의실행`을 이벤트 체인으로 고정합니다.
+4. `paper`로 수익률뿐 아니라 최대낙폭, 거래횟수를 함께 점검합니다.
+
+이 단계에서 `리스크 가드` 파라미터를 먼저 고정합니다.
+- `max_positions`
+- `min_score`
+- `max_weight_per_symbol`
+- `max_daily_turnover`
+
+### 2) 집행 게이트 (LEAN 백테스트 + 브로커 Paper)
+1. 같은 신호/리스크 파라미터로 LEAN 백테스트를 실행합니다.
+2. 브로커 Paper 계좌에서 주문/체결/장애 로그를 확인합니다.
+3. 주문 실패율, 체결 지연, 슬리피지가 허용 범위인지 검토합니다.
+
+### 3) 자금 전환 게이트 (소액 라이브 -> 점진 증액)
+1. 소액 라이브로 시작합니다(생활비와 분리된 자금).
+2. 손실 한도/최대낙폭/주문 실패율 기준을 넘으면 즉시 중단합니다.
+3. 일정 기간 안정적으로 운영된 경우에만 단계적으로 자금을 증액합니다.
+
+즉, 돈으로 이어지는 구조는  
+`신호 품질 -> 리스크 통제 -> 집행 안정성 -> 소액 실전 검증 -> 점진 증액` 순서입니다.
+
+### Mermaid: End-to-End 운영 플로우
+```mermaid
+flowchart TD
+    A[Qlib 신호 생성\n(date,symbol,score)] --> B[신호 CSV 검증\nvalidate]
+    B --> C[pipeline 실행\n생성->검증->모의실행]
+    C --> D[로컬 paper 성능 점검\n수익률/최대낙폭/거래수]
+    D --> E{연구 게이트 통과?}
+    E -- 아니오 --> A
+    E -- 예 --> F[LEAN 백테스트\n동일 신호/동일 리스크 파라미터]
+    F --> G{집행 게이트 통과?}
+    G -- 아니오 --> A
+    G -- 예 --> H[브로커 Paper 계좌 리허설\n주문/체결/장애 로그 점검]
+    H --> I{운영 안정성 통과?}
+    I -- 아니오 --> A
+    I -- 예 --> J[소액 Live 배포\nlean live deploy]
+    J --> K{손실/장애 한도 준수?}
+    K -- 아니오 --> L[즉시 중단\n원인 분석 후 롤백]
+    L --> A
+    K -- 예 --> M[주간 리뷰 후 점진 증액]
+    M --> N[지속 운영\n리스크 가드 상시 적용]
+```
+
+---
+
 ## 디렉터리 구조
 ```text
 neon_alpha/
+├─ docs/
+│  ├─ DOCS_INDEX_KR.md
+│  ├─ MANUAL_BEGINNER_KR.md
+│  ├─ REAL_TRADING_GUIDE_KR.md
+│  ├─ QLIB_RESEARCH_GUIDE_KR.md
+│  └─ LEAN_EXECUTION_GUIDE_KR.md
 ├─ data/
 │  └─ sample_signals.csv
 │  └─ sample_prices.csv
@@ -144,6 +206,39 @@ bash run.sh lean \
 - `min_score`
 - `max_weight_per_symbol`
 - `max_daily_turnover`
+
+---
+
+## LEAN 라이브 배포 실행
+사전 조건:
+- 브로커 실계좌/페이퍼 계좌 준비
+- API 키 발급 완료
+- LEAN CLI 로그인 완료
+
+실행(대화형):
+```bash
+bash run.sh live \
+  --lean-project /path/to/your/lean-project \
+  --signal-csv neon_alpha/data/generated_signals.csv
+```
+
+실행(비대화형 예시 - Alpaca):
+```bash
+bash run.sh live \
+  --lean-project /path/to/your/lean-project \
+  --signal-csv neon_alpha/data/generated_signals.csv \
+  -- \
+  --brokerage Alpaca \
+  --data-provider-live Alpaca \
+  --alpaca-environment live \
+  --alpaca-api-key "$ALPACA_API_KEY" \
+  --alpaca-api-secret "$ALPACA_API_SECRET"
+```
+
+동작:
+1. 알고리즘 파일을 LEAN 프로젝트 `main.py`로 복사
+2. 신호 파일을 LEAN 프로젝트 `data/signals.csv`로 복사
+3. `lean live deploy` 실행
 
 ---
 

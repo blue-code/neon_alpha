@@ -29,6 +29,7 @@ Commands:
   paper                 Run local paper simulation
   pipeline              Run event-driven pipeline (generate -> validate -> paper)
   lean                  Run LEAN backtest wrapper
+  live                  Run LEAN live deploy wrapper
   help                  Show help
 
 Examples:
@@ -38,6 +39,8 @@ Examples:
   bash run.sh pipeline --mode sample --price-csv neon_alpha/data/sample_prices.csv
   bash run.sh qlib --provider-uri ~/.qlib/qlib_data/us_data --start 2022-01-01 --end 2025-12-31
   bash run.sh lean --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv --long-count 3
+  bash run.sh live --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv --long-count 3 --max-positions 3
+  bash run.sh live --lean-project /path/to/lean-project -- --brokerage "Paper Trading" --data-provider-live "Alpaca"
 EOF
 }
 
@@ -133,6 +136,85 @@ case "$cmd" in
     cp "$SIGNAL_CSV" "$LEAN_PROJECT/data/signals.csv"
 
     lean backtest "$LEAN_PROJECT" \
+      --parameter "signal_csv=$LEAN_PROJECT/data/signals.csv" \
+      --parameter "long_count=$LONG_COUNT" \
+      --parameter "max_positions=$MAX_POSITIONS" \
+      --parameter "min_score=$MIN_SCORE" \
+      --parameter "max_weight_per_symbol=$MAX_WEIGHT_PER_SYMBOL" \
+      --parameter "max_daily_turnover=$MAX_DAILY_TURNOVER" \
+      "${EXTRA_ARGS[@]}"
+    ;;
+  live)
+    LEAN_PROJECT=""
+    SIGNAL_CSV="${SIGNAL_CSV:-$ROOT_DIR/data/generated_signals.csv}"
+    LONG_COUNT="${LONG_COUNT:-3}"
+    MAX_POSITIONS="${MAX_POSITIONS:-$LONG_COUNT}"
+    MIN_SCORE="${MIN_SCORE:--1e9}"
+    MAX_WEIGHT_PER_SYMBOL="${MAX_WEIGHT_PER_SYMBOL:-0.5}"
+    MAX_DAILY_TURNOVER="${MAX_DAILY_TURNOVER:-1.0}"
+    EXTRA_ARGS=()
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --lean-project)
+          LEAN_PROJECT="$2"
+          shift 2
+          ;;
+        --signal-csv)
+          SIGNAL_CSV="$2"
+          shift 2
+          ;;
+        --long-count)
+          LONG_COUNT="$2"
+          shift 2
+          ;;
+        --max-positions)
+          MAX_POSITIONS="$2"
+          shift 2
+          ;;
+        --min-score)
+          MIN_SCORE="$2"
+          shift 2
+          ;;
+        --max-weight-per-symbol)
+          MAX_WEIGHT_PER_SYMBOL="$2"
+          shift 2
+          ;;
+        --max-daily-turnover)
+          MAX_DAILY_TURNOVER="$2"
+          shift 2
+          ;;
+        --)
+          shift
+          EXTRA_ARGS+=("$@")
+          break
+          ;;
+        *)
+          EXTRA_ARGS+=("$1")
+          shift
+          ;;
+      esac
+    done
+
+    if [[ -z "$LEAN_PROJECT" ]]; then
+      echo "[run] --lean-project is required for live command."
+      exit 1
+    fi
+    if [[ ! -f "$SIGNAL_CSV" ]]; then
+      echo "[run] signal csv not found: $SIGNAL_CSV"
+      exit 1
+    fi
+    if ! command -v lean >/dev/null 2>&1; then
+      echo "[run] lean command not found. install with: bash setup.sh --with-lean"
+      exit 1
+    fi
+
+    mkdir -p "$LEAN_PROJECT"
+    mkdir -p "$LEAN_PROJECT/data"
+    cp "$ROOT_DIR/execution/lean/HybridQlibLeanAlgorithm.py" "$LEAN_PROJECT/main.py"
+    cp "$SIGNAL_CSV" "$LEAN_PROJECT/data/signals.csv"
+
+    lean live deploy "$LEAN_PROJECT" \
       --parameter "signal_csv=$LEAN_PROJECT/data/signals.csv" \
       --parameter "long_count=$LONG_COUNT" \
       --parameter "max_positions=$MAX_POSITIONS" \

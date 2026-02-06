@@ -8,6 +8,14 @@
 이 문서 목표는 단 1개입니다.  
 `NeonAlpha`를 **직접 실행하고**, 결과를 **해석하고**, 다음에 무엇을 할지 **스스로 판단**할 수 있게 만드는 것.
 
+실제 투자(계좌/통장/브로커 연결/자금 운영) 상세는  
+[`REAL_TRADING_GUIDE_KR.md`](REAL_TRADING_GUIDE_KR.md)를 함께 확인하세요.
+
+파트별 상세 문서:
+- [`DOCS_INDEX_KR.md`](DOCS_INDEX_KR.md)
+- [`QLIB_RESEARCH_GUIDE_KR.md`](QLIB_RESEARCH_GUIDE_KR.md)
+- [`LEAN_EXECUTION_GUIDE_KR.md`](LEAN_EXECUTION_GUIDE_KR.md)
+
 ---
 
 ## 1. 5분 요약
