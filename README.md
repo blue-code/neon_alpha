@@ -7,6 +7,10 @@
 - [`docs/QLIB_RESEARCH_GUIDE_KR.md`](docs/QLIB_RESEARCH_GUIDE_KR.md) - Qlib 리서치/신호 생성 상세
 - [`docs/LEAN_EXECUTION_GUIDE_KR.md`](docs/LEAN_EXECUTION_GUIDE_KR.md) - LEAN 집행/백테스트/실거래 상세
 
+실행 기준:
+- 모든 명령은 프로젝트 루트(`neon_alpha/`)에서 실행
+- 파일 경로는 루트 기준 상대경로(`data/...`) 사용
+
 ## 프로젝트 목적
 미국 주식 시장에서 아래 2가지 강점을 결합하기 위한 독립 프로젝트입니다.
 
@@ -60,23 +64,23 @@
 ### Mermaid: End-to-End 운영 플로우
 ```mermaid
 flowchart TD
-    A[Qlib 신호 생성\n(date,symbol,score)] --> B[신호 CSV 검증\nvalidate]
-    B --> C[pipeline 실행\n생성->검증->모의실행]
-    C --> D[로컬 paper 성능 점검\n수익률/최대낙폭/거래수]
+    A["Qlib 신호 생성<br/>(date,symbol,score)"] --> B["신호 CSV 검증<br/>validate"]
+    B --> C["pipeline 실행<br/>생성->검증->모의실행"]
+    C --> D["로컬 paper 성능 점검<br/>수익률/최대낙폭/거래수"]
     D --> E{연구 게이트 통과?}
     E -- 아니오 --> A
-    E -- 예 --> F[LEAN 백테스트\n동일 신호/동일 리스크 파라미터]
+    E -- 예 --> F["LEAN 백테스트<br/>동일 신호/동일 리스크 파라미터"]
     F --> G{집행 게이트 통과?}
     G -- 아니오 --> A
-    G -- 예 --> H[브로커 Paper 계좌 리허설\n주문/체결/장애 로그 점검]
+    G -- 예 --> H["브로커 Paper 계좌 리허설<br/>주문/체결/장애 로그 점검"]
     H --> I{운영 안정성 통과?}
     I -- 아니오 --> A
-    I -- 예 --> J[소액 Live 배포\nlean live deploy]
+    I -- 예 --> J["소액 Live 배포<br/>lean live deploy"]
     J --> K{손실/장애 한도 준수?}
-    K -- 아니오 --> L[즉시 중단\n원인 분석 후 롤백]
+    K -- 아니오 --> L["즉시 중단<br/>원인 분석 후 롤백"]
     L --> A
     K -- 예 --> M[주간 리뷰 후 점진 증액]
-    M --> N[지속 운영\n리스크 가드 상시 적용]
+    M --> N["지속 운영<br/>리스크 가드 상시 적용"]
 ```
 
 ---
@@ -140,23 +144,23 @@ bash run.sh sample
 ```
 
 출력:
-- `neon_alpha/data/generated_signals.csv`
+- `data/generated_signals.csv`
 
 ### 3) 신호 검증
 ```bash
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
 ```
 
 ### 4) 로컬 페이퍼(모의) 실행
 ```bash
 bash run.sh paper \
-  --signal-csv neon_alpha/data/generated_signals.csv \
-  --price-csv neon_alpha/data/sample_prices.csv
+  --signal-csv data/generated_signals.csv \
+  --price-csv data/sample_prices.csv
 ```
 
 ### 5) 이벤트 기반 파이프라인 실행
 ```bash
-bash run.sh pipeline --mode sample --price-csv neon_alpha/data/sample_prices.csv
+bash run.sh pipeline --mode sample --price-csv data/sample_prices.csv
 ```
 
 ---
@@ -169,7 +173,7 @@ bash run.sh qlib \
   --start 2022-01-01 \
   --end 2025-12-31 \
   --symbols AAPL MSFT NVDA AMZN GOOGL META SPY \
-  --output neon_alpha/data/generated_signals.csv
+  --output data/generated_signals.csv
 ```
 
 기본 신호 로직:
@@ -188,7 +192,7 @@ bash run.sh qlib \
 ```bash
 bash run.sh lean \
   --lean-project /path/to/your/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   --long-count 3 \
   --max-positions 3 \
   --min-score -1.0 \
@@ -219,14 +223,14 @@ bash run.sh lean \
 ```bash
 bash run.sh live \
   --lean-project /path/to/your/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv
+  --signal-csv data/generated_signals.csv
 ```
 
 실행(비대화형 예시 - Alpaca):
 ```bash
 bash run.sh live \
   --lean-project /path/to/your/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   -- \
   --brokerage Alpaca \
   --data-provider-live Alpaca \

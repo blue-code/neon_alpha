@@ -21,6 +21,7 @@ usage() {
   cat <<'EOF'
 Usage:
   bash run.sh <command> [options]
+  (프로젝트 루트에서 실행, 경로는 data/... 기준)
 
 Commands:
   sample                Copy sample signal CSV -> data/generated_signals.csv
@@ -34,12 +35,12 @@ Commands:
 
 Examples:
   bash run.sh sample
-  bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
-  bash run.sh paper --signal-csv neon_alpha/data/generated_signals.csv --price-csv neon_alpha/data/sample_prices.csv
-  bash run.sh pipeline --mode sample --price-csv neon_alpha/data/sample_prices.csv
+  bash run.sh validate --signal-csv data/generated_signals.csv
+  bash run.sh paper --signal-csv data/generated_signals.csv --price-csv data/sample_prices.csv
+  bash run.sh pipeline --mode sample --price-csv data/sample_prices.csv
   bash run.sh qlib --provider-uri ~/.qlib/qlib_data/us_data --start 2022-01-01 --end 2025-12-31
-  bash run.sh lean --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv --long-count 3
-  bash run.sh live --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv --long-count 3 --max-positions 3
+  bash run.sh lean --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv --long-count 3
+  bash run.sh live --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv --long-count 3 --max-positions 3
   bash run.sh live --lean-project /path/to/lean-project -- --brokerage "Paper Trading" --data-provider-live "Alpaca"
 EOF
 }

@@ -39,7 +39,7 @@ bash run.sh qlib \
   --start 2022-01-01 \
   --end 2025-12-31 \
   --symbols AAPL MSFT NVDA AMZN GOOGL META SPY \
-  --output neon_alpha/data/generated_signals.csv
+  --output data/generated_signals.csv
 ```
 
 ## 4-2. 데이터 품질 점검 포인트
@@ -59,7 +59,7 @@ bash run.sh qlib \
 
 실행:
 ```bash
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
 ```
 
 합격 기준 예시:
@@ -69,6 +69,7 @@ bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
 
 ## 6. 이벤트 기반 오케스트레이션 (pipeline)
 요청 항목 반영: `pipeline` 이벤트 체인을 Qlib 파트에서도 표준 절차로 사용한다.
+`pipeline`은 가능하면 `vnpy.event.EventEngine`을 사용하고, 독립 실행 환경에서는 내장 동기 이벤트 버스로 자동 fallback 된다.
 
 관련 파일:
 - `src/neon_alpha/cli.py`
@@ -88,7 +89,7 @@ bash run.sh pipeline \
   --start 2022-01-01 \
   --end 2025-12-31 \
   --symbols AAPL MSFT NVDA AMZN GOOGL META SPY \
-  --price-csv neon_alpha/data/sample_prices.csv
+  --price-csv data/sample_prices.csv
 ```
 
 의미:
@@ -118,8 +119,8 @@ bash run.sh pipeline \
 실행 예시:
 ```bash
 bash run.sh paper \
-  --signal-csv neon_alpha/data/generated_signals.csv \
-  --price-csv neon_alpha/data/sample_prices.csv \
+  --signal-csv data/generated_signals.csv \
+  --price-csv data/sample_prices.csv \
   --max-positions 3 \
   --min-score -1.0 \
   --max-weight-per-symbol 0.4 \
@@ -145,10 +146,22 @@ bash run.sh paper \
 - `max_drawdown`과 동시 판단 필수
 - `trades` 과다 전략은 수수료/슬리피지 취약
 
-## 10. Qlib 파트 완료 체크리스트
+## 10. LEAN 인계 산출물 규칙
+- 기본 인계 파일: `data/generated_signals.csv`
+- 필수 스키마: `date,symbol,score`
+- 인계 직전 필수 명령:
+```bash
+bash run.sh validate --signal-csv data/generated_signals.csv
+```
+- 인계 조건: `rows > 0`, `duplicates = 0`
+
+## 11. Qlib 파트 완료 체크리스트
 - [ ] 실데이터 경로/품질 확인 완료
 - [ ] 신호 CSV 검증 통과(`rows > 0`, `duplicates = 0`)
 - [ ] `pipeline` 체인 3회 이상 정상 실행
 - [ ] 리스크 가드 파라미터 스윕 완료
 - [ ] 페이퍼 루프 결과표(수익/낙폭/거래수) 확보
 - [ ] LEAN 전달용 최종 신호 파일 확정
+
+다음 문서:
+- [`LEAN_EXECUTION_GUIDE_KR.md`](LEAN_EXECUTION_GUIDE_KR.md)

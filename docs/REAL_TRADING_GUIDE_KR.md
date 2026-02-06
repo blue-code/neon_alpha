@@ -7,6 +7,12 @@
 - [`QLIB_RESEARCH_GUIDE_KR.md`](QLIB_RESEARCH_GUIDE_KR.md)
 - [`LEAN_EXECUTION_GUIDE_KR.md`](LEAN_EXECUTION_GUIDE_KR.md)
 
+사전 완료 권장:
+- Qlib 문서 체크리스트 완료 후 진입
+- LEAN 문서 체크리스트 완료 후 진입
+- 명령은 프로젝트 루트(`neon_alpha/`)에서 실행
+- 경로는 `data/...` 기준 사용
+
 ---
 
 ## 1. 먼저 정확히: 이 프로젝트로 가능한 것 / 불가능한 것
@@ -117,11 +123,11 @@
 bash run.sh qlib \
   --provider-uri ~/.qlib/qlib_data/us_data \
   --start 2022-01-01 \
-  --end 2026-02-06 \
+  --end 2025-12-31 \
   --symbols AAPL MSFT NVDA AMZN GOOGL META SPY \
-  --output neon_alpha/data/generated_signals.csv
+  --output data/generated_signals.csv
 
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
 ```
 
 ## 5-3. D-0(장 시작 전): 라이브 배포
@@ -134,14 +140,14 @@ bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
 ```bash
 bash run.sh live \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv
+  --signal-csv data/generated_signals.csv
 ```
 
 예시 2: 비대화형 배포(Alpaca, 실계좌)
 ```bash
 bash run.sh live \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   -- \
   --brokerage Alpaca \
   --data-provider-live Alpaca \
@@ -154,7 +160,7 @@ bash run.sh live \
 ```bash
 bash run.sh live \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   -- \
   --brokerage "Paper Trading" \
   --data-provider-live Alpaca \

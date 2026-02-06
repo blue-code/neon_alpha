@@ -26,12 +26,20 @@ LEAN 파트에서 하지 않는 것:
 5. 일일 회전율이 `max_daily_turnover` 초과면 기존 보유 유지
 6. 미국장 시작 후 5분에 1회 리밸런싱
 
+Qlib 인계물 체크:
+- 입력 파일: `data/generated_signals.csv`
+- 필수 컬럼: `date,symbol,score`
+- 백테스트/라이브 전 검증:
+```bash
+bash run.sh validate --signal-csv data/generated_signals.csv
+```
+
 ## 4. 백테스트 표준 절차
 실행:
 ```bash
 bash run.sh lean \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   --long-count 3 \
   --max-positions 3 \
   --min-score -1.0 \
@@ -54,7 +62,7 @@ bash run.sh lean \
 ```bash
 bash run.sh live \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   --long-count 3 \
   --max-positions 3 \
   --min-score -1.0 \
@@ -66,7 +74,7 @@ bash run.sh live \
 ```bash
 bash run.sh live \
   --lean-project /path/to/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   --max-positions 3 \
   --max-weight-per-symbol 0.4 \
   -- \
@@ -84,6 +92,7 @@ bash run.sh live \
 
 ## 6. 이벤트 기반 오케스트레이션 (LEAN 연동 관점)
 요청 항목 반영: `pipeline` 체인은 LEAN 이전 단계의 사전 게이트로 사용한다.
+`pipeline`은 가능하면 `vnpy.event.EventEngine`을 사용하고, 독립 실행 환경에서는 내장 동기 이벤트 버스로 자동 fallback 된다.
 
 권장 운용:
 1. `pipeline`으로 `생성 -> 검증 -> 모의실행` 수행
@@ -92,9 +101,9 @@ bash run.sh live \
 
 표준 명령 흐름:
 ```bash
-bash run.sh pipeline --mode qlib --provider-uri ~/.qlib/qlib_data/us_data --price-csv neon_alpha/data/sample_prices.csv
-bash run.sh lean --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv
-bash run.sh live --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh pipeline --mode qlib --provider-uri ~/.qlib/qlib_data/us_data --price-csv data/sample_prices.csv
+bash run.sh lean --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv
+bash run.sh live --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv
 ```
 
 ## 7. 리스크 가드 (집행 강제 규칙)
@@ -142,3 +151,6 @@ bash run.sh live --lean-project /path/to/lean-project --signal-csv neon_alpha/da
 - [ ] `pipeline -> lean -> live` 순서 문서화 완료
 - [ ] Paper 계좌 운영 로그 4주 이상 확보
 - [ ] 라이브 배포/중단 리허설 완료
+
+다음 문서:
+- [`REAL_TRADING_GUIDE_KR.md`](REAL_TRADING_GUIDE_KR.md)

@@ -14,11 +14,17 @@ Qlib에서 실데이터 기반 신호를 만들고 검증하는 절차를 확정
 4. [`REAL_TRADING_GUIDE_KR.md`](REAL_TRADING_GUIDE_KR.md)  
 브로커 계좌, 입출금, 세금, 실거래 운영 런북을 점검한다.
 
-## 3. 파트별 역할 정의
+## 3. 공통 실행 기준
+- 모든 명령은 프로젝트 루트(`neon_alpha/`)에서 실행
+- 문서 예시는 루트 상대경로(`data/...`) 기준
+- 신호 표준 산출물은 `data/generated_signals.csv`
+- LEAN 실행 시 `run.sh`가 위 파일을 LEAN 프로젝트 `data/signals.csv`로 복사
+
+## 4. 파트별 역할 정의
 - `Qlib`: 리서치/팩터 신호 생성
 - `LEAN`: 이벤트 기반 집행/백테스트/실거래 연동
 
-## 4. 공통 핵심 기능(모든 파트에서 확인)
+## 5. 공통 핵심 기능(모든 파트에서 확인)
 ### 이벤트 기반 오케스트레이션
 - `pipeline` 명령이 `생성 -> 검증 -> 모의실행`을 이벤트 체인으로 처리한다.
 - 구현 위치: `src/neon_alpha/cli.py`, `src/neon_alpha/event_bus.py`
@@ -34,21 +40,30 @@ Qlib에서 실데이터 기반 신호를 만들고 검증하는 절차를 확정
 - 실거래 전 로컬 모의 성능을 반복 점검한다.
 - 구현 위치: `src/neon_alpha/paper.py`, `bash run.sh paper`
 
-## 5. 빠른 명령 요약
+## 6. 단계별 인계 맵
+| 단계 | 핵심 명령 | 산출물 | 다음 단계 입력 |
+| --- | --- | --- | --- |
+| Qlib 신호 생성 | `bash run.sh qlib ... --output data/generated_signals.csv` | `data/generated_signals.csv` | validate/paper/lean |
+| 신호 검증 | `bash run.sh validate --signal-csv data/generated_signals.csv` | 검증 로그 | pipeline/lean |
+| 페이퍼 점검 | `bash run.sh paper --signal-csv data/generated_signals.csv --price-csv data/sample_prices.csv` | 성능 지표 | 전략 수정 또는 lean |
+| LEAN 백테스트 | `bash run.sh lean --signal-csv data/generated_signals.csv` | 백테스트 결과 | live 배포 판단 |
+| LEAN 라이브 | `bash run.sh live --signal-csv data/generated_signals.csv` | 실거래 주문/운영 로그 | 주간 리뷰/증액 판단 |
+
+## 7. 빠른 명령 요약
 ```bash
 # 1) Qlib 신호 생성
 bash run.sh qlib --provider-uri ~/.qlib/qlib_data/us_data --start 2022-01-01 --end 2025-12-31
 
 # 2) 신호 검증
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
 
 # 3) 로컬 페이퍼 시뮬레이션
-bash run.sh paper --signal-csv neon_alpha/data/generated_signals.csv --price-csv neon_alpha/data/sample_prices.csv
+bash run.sh paper --signal-csv data/generated_signals.csv --price-csv data/sample_prices.csv
 
 # 4) 이벤트 체인으로 한번에 실행
-bash run.sh pipeline --mode qlib --provider-uri ~/.qlib/qlib_data/us_data --price-csv neon_alpha/data/sample_prices.csv
+bash run.sh pipeline --mode qlib --provider-uri ~/.qlib/qlib_data/us_data --price-csv data/sample_prices.csv
 
 # 5) LEAN 백테스트/라이브
-bash run.sh lean --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv
-bash run.sh live --lean-project /path/to/lean-project --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh lean --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv
+bash run.sh live --lean-project /path/to/lean-project --signal-csv data/generated_signals.csv
 ```

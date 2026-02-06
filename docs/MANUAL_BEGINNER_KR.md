@@ -16,6 +16,10 @@
 - [`QLIB_RESEARCH_GUIDE_KR.md`](QLIB_RESEARCH_GUIDE_KR.md)
 - [`LEAN_EXECUTION_GUIDE_KR.md`](LEAN_EXECUTION_GUIDE_KR.md)
 
+실행 기준:
+- 모든 명령은 프로젝트 루트(`neon_alpha/`)에서 실행
+- 파일 경로는 `data/...` 형식 사용
+
 ---
 
 ## 1. 5분 요약
@@ -124,11 +128,11 @@ bash run.sh sample
 ```
 
 출력 파일:
-- `neon_alpha/data/generated_signals.csv`
+- `data/generated_signals.csv`
 
 ### 6-2. 신호 검증
 ```bash
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
 ```
 
 정상이라면 마지막에 `OK`가 나옵니다.
@@ -136,8 +140,8 @@ bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
 ### 6-3. 모의 실행(페이퍼)
 ```bash
 bash run.sh paper \
-  --signal-csv neon_alpha/data/generated_signals.csv \
-  --price-csv neon_alpha/data/sample_prices.csv
+  --signal-csv data/generated_signals.csv \
+  --price-csv data/sample_prices.csv
 ```
 
 출력 예시 지표:
@@ -148,7 +152,7 @@ bash run.sh paper \
 
 ### 6-4. 이벤트 파이프라인 한 번에
 ```bash
-bash run.sh pipeline --mode sample --price-csv neon_alpha/data/sample_prices.csv
+bash run.sh pipeline --mode sample --price-csv data/sample_prices.csv
 ```
 
 이 명령은 아래를 자동으로 연결합니다.
@@ -167,13 +171,13 @@ bash run.sh qlib \
   --start 2022-01-01 \
   --end 2025-12-31 \
   --symbols AAPL MSFT NVDA AMZN GOOGL META SPY \
-  --output neon_alpha/data/generated_signals.csv
+  --output data/generated_signals.csv
 ```
 
 그 다음은 동일:
 ```bash
-bash run.sh validate --signal-csv neon_alpha/data/generated_signals.csv
-bash run.sh paper --signal-csv neon_alpha/data/generated_signals.csv --price-csv neon_alpha/data/sample_prices.csv
+bash run.sh validate --signal-csv data/generated_signals.csv
+bash run.sh paper --signal-csv data/generated_signals.csv --price-csv data/sample_prices.csv
 ```
 
 ---
@@ -186,7 +190,7 @@ bash run.sh paper --signal-csv neon_alpha/data/generated_signals.csv --price-csv
 ```bash
 bash run.sh lean \
   --lean-project /path/to/your/lean-project \
-  --signal-csv neon_alpha/data/generated_signals.csv \
+  --signal-csv data/generated_signals.csv \
   --long-count 3 \
   --max-positions 3 \
   --min-score -1.0 \
