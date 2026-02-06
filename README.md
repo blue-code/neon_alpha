@@ -1,5 +1,8 @@
 # NeonAlpha (Qlib + LEAN)
 
+초보자용 전체 매뉴얼:
+- [`MANUAL_BEGINNER_KR.md`](MANUAL_BEGINNER_KR.md)
+
 ## 프로젝트 목적
 미국 주식 시장에서 아래 2가지 강점을 결합하기 위한 독립 프로젝트입니다.
 
