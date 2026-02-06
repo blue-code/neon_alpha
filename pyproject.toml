@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neon-alpha"
+version = "0.1.0"
+description = "US hybrid quant workflow (Qlib research + LEAN execution)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.2.3",
+]
+
+[project.optional-dependencies]
+qlib = [
+    "pyqlib>=0.9.6",
+]
+lean = [
+    "lean>=1.0.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

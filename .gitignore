@@ -1,0 +1,8 @@
+.venv/
+.env
+data/generated_signals.csv
+data/paper_metrics.csv
+data/pipeline_paper_metrics.csv
+__pycache__/
+*.pyc
+*.egg-info/
