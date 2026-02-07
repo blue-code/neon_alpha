@@ -1,8 +1,14 @@
 .venv/
 .env
-data/generated_signals.csv
-data/paper_metrics.csv
-data/pipeline_paper_metrics.csv
 __pycache__/
 *.pyc
 *.egg-info/
+.DS_Store
+
+# Large data files (download with scripts)
+data/*.csv
+data/*.txt
+
+# External repos (clone separately)
+qlib_repo/
+lean_project/
